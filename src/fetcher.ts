@@ -48,3 +48,33 @@ export async function fetchWithRedirectChain(inputUrl: string): Promise<FetchRes
 
   throw new Error(`Too many redirects (>${MAX_HOPS}) starting from ${inputUrl}`);
 }
+
+export interface ProbeResult {
+  ok: boolean;
+  status: number | null;
+  error?: string;
+}
+
+export async function probeUrl(url: string, timeoutMs = 5000): Promise<ProbeResult> {
+  const headResult = await tryFetch(url, "HEAD", timeoutMs);
+  if (headResult.status === 405 || headResult.status === 501) {
+    return tryFetch(url, "GET", timeoutMs);
+  }
+  return headResult;
+}
+
+async function tryFetch(url: string, method: "HEAD" | "GET", timeoutMs: number): Promise<ProbeResult> {
+  try {
+    const response = await fetch(url, {
+      method,
+      redirect: "follow",
+      signal: AbortSignal.timeout(timeoutMs),
+      headers: { "User-Agent": USER_AGENT },
+    });
+    if (method === "GET") await response.arrayBuffer().catch(() => undefined);
+    return { ok: response.ok, status: response.status };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return { ok: false, status: null, error: msg };
+  }
+}

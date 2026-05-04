@@ -4,21 +4,20 @@ interface OgRule {
   prop: string;
   name: string;
   status: "fail" | "warn" | "info";
-  priority: "high" | "medium" | "low";
   required: boolean;
   validate?: (value: string) => string | null; // returns error message or null
 }
 
 const RULES: OgRule[] = [
-  { prop: "og:title", name: "og:title", status: "fail", priority: "high", required: true },
-  { prop: "og:description", name: "og:description", status: "fail", priority: "high", required: true },
+  { prop: "og:title", name: "og:title", status: "fail", required: true },
+  { prop: "og:description", name: "og:description", status: "fail", required: true },
   {
-    prop: "og:image", name: "og:image", status: "fail", priority: "high", required: true,
+    prop: "og:image", name: "og:image", status: "fail", required: true,
     validate: (v) => /^https?:\/\//i.test(v) ? null : "URL is not absolute",
   },
-  { prop: "og:url", name: "og:url", status: "warn", priority: "medium", required: false },
-  { prop: "og:type", name: "og:type", status: "warn", priority: "medium", required: false },
-  { prop: "og:locale", name: "og:locale", status: "info", priority: "low", required: false },
+  { prop: "og:url", name: "og:url", status: "warn", required: false },
+  { prop: "og:type", name: "og:type", status: "warn", required: false },
+  { prop: "og:locale", name: "og:locale", status: "info", required: false },
 ];
 
 export const openGraphCheck: Check = (ctx: AuditContext): Finding[] => {
@@ -36,7 +35,6 @@ export const openGraphCheck: Check = (ctx: AuditContext): Finding[] => {
         category: cat, name: rule.name,
         message: rule.required ? "Missing" : "Not set (recommended)",
         fix: `Add <meta property="${rule.prop}" content="…"> to <head>`,
-        priority: rule.priority,
       });
       continue;
     }
@@ -46,14 +44,12 @@ export const openGraphCheck: Check = (ctx: AuditContext): Finding[] => {
         status: "warn", category: cat, name: rule.name,
         message: `${value} – ${validationError}`,
         fix: rule.prop === "og:image" ? "Use an absolute URL (https://…)" : undefined,
-        priority: rule.priority,
       });
       continue;
     }
     findings.push({
       status: "ok", category: cat, name: rule.name,
       message: truncate(value, 80),
-      priority: rule.priority,
     });
   }
 
@@ -65,7 +61,6 @@ export const openGraphCheck: Check = (ctx: AuditContext): Finding[] => {
       status: "warn", category: cat, name: "og:url vs canonical",
       message: `og:url (${ogUrl}) differs from canonical (${canonical})`,
       fix: "Keep og:url and canonical in sync",
-      priority: "medium",
     });
   }
 
@@ -79,7 +74,6 @@ export const openGraphCheck: Check = (ctx: AuditContext): Finding[] => {
         status: "warn", category: cat, name: "og:locale vs html lang",
         message: `og:locale (${ogLocale}) ≠ html lang (${ctx.htmlLang})`,
         fix: "Align the language declarations",
-        priority: "low",
       });
     }
   }

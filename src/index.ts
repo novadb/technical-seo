@@ -23,13 +23,13 @@ Options:
   -h, --help                Show this help
   -v, --version             Print version
       --no-color            Disable colored output
-      --group=MODE          Group findings: category (default), priority, flat
+      --group=MODE          Group findings: category (default), severity, flat
       --format=FORMAT       Output format: pretty (default), markdown, compact
       --hide=STATUSES       Comma-separated statuses to suppress (ok,warn,fail,info)
-      --min-priority=LEVEL  Hide findings below: high, medium, low, info
+      --min-severity=LEVEL  Hide findings below: fail, warn, info, ok
 
 Examples:
-  technical-seo https://example.com --group=priority --hide=ok
+  technical-seo https://example.com --group=severity --hide=ok
   technical-seo https://example.com --format=markdown --no-color > report.md
 `);
 }
@@ -79,7 +79,6 @@ async function main(): Promise<void> {
         category: "HTTP Response",
         name: "Check error",
         message: `A check threw an exception: ${msg}`,
-        priority: "low",
       });
     }
   }
@@ -88,7 +87,7 @@ async function main(): Promise<void> {
     group: args.group,
     format: args.format,
     hide: args.hide,
-    minPriority: args.minPriority,
+    minSeverity: args.minSeverity,
   };
   const summary = report(findings, ctx, opts);
   process.exit(summary.fail > 0 ? 1 : 0);

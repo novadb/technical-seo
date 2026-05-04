@@ -24,7 +24,6 @@ export const structuredDataCheck: Check = (ctx: AuditContext): Finding[] => {
       status: "warn", category: cat, name: "JSON-LD",
       message: "No JSON-LD blocks found",
       fix: "Add structured data matching the content type (Schema.org)",
-      priority: "medium",
     });
     return findings;
   }
@@ -32,7 +31,6 @@ export const structuredDataCheck: Check = (ctx: AuditContext): Finding[] => {
   findings.push({
     status: "ok", category: cat, name: "JSON-LD present",
     message: `${blocks.length} <script type="application/ld+json"> block(s)`,
-    priority: "medium",
   });
 
   const types: string[] = [];
@@ -50,7 +48,6 @@ export const structuredDataCheck: Check = (ctx: AuditContext): Finding[] => {
         status: "fail", category: cat, name: "JSON-LD Parsing",
         message: `Invalid JSON: ${msg}`,
         fix: "Fix JSON syntax (e.g. validate with jsonlint)",
-        priority: "high",
       });
       continue;
     }
@@ -68,7 +65,6 @@ export const structuredDataCheck: Check = (ctx: AuditContext): Finding[] => {
           status: "warn", category: cat, name: `${t} – required fields`,
           message: `Missing: ${missing.join(", ")}`,
           fix: `Add fields ${missing.join(", ")} to the JSON-LD object`,
-          priority: "medium",
         });
       }
     });
@@ -78,7 +74,6 @@ export const structuredDataCheck: Check = (ctx: AuditContext): Finding[] => {
     findings.push({
       status: "ok", category: cat, name: "JSON-LD Parsing",
       message: "All blocks parse cleanly",
-      priority: "high",
     });
   }
 
@@ -87,7 +82,6 @@ export const structuredDataCheck: Check = (ctx: AuditContext): Finding[] => {
     findings.push({
       status: "info", category: cat, name: "@type detection",
       message: `Detected types: ${unique.join(", ")}`,
-      priority: "info",
     });
   }
 

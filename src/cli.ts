@@ -1,4 +1,4 @@
-import type { GroupMode, OutputFormat, Priority, Status } from "./types.js";
+import type { GroupMode, OutputFormat, Status } from "./types.js";
 
 export interface ParsedArgs {
   url: string | null;
@@ -8,13 +8,12 @@ export interface ParsedArgs {
   group: GroupMode;
   format: OutputFormat;
   hide: Set<Status>;
-  minPriority: Priority | null;
+  minSeverity: Status | null;
 }
 
-const GROUPS: ReadonlySet<GroupMode> = new Set(["category", "priority", "flat"]);
+const GROUPS: ReadonlySet<GroupMode> = new Set(["category", "severity", "flat"]);
 const FORMATS: ReadonlySet<OutputFormat> = new Set(["pretty", "markdown", "compact"]);
 const STATUSES: ReadonlySet<Status> = new Set(["ok", "fail", "warn", "info"]);
-const PRIORITIES: ReadonlySet<Priority> = new Set(["high", "medium", "low", "info"]);
 
 export class CliError extends Error {}
 
@@ -27,17 +26,28 @@ export function parseArgs(argv: string[]): ParsedArgs {
     group: "category",
     format: "pretty",
     hide: new Set(),
-    minPriority: null,
+    minSeverity: null,
   };
   for (const arg of argv) {
     if (arg === "-h" || arg === "--help") out.help = true;
     else if (arg === "-v" || arg === "--version") out.version = true;
     else if (arg === "--no-color") out.noColor = true;
-    else if (arg.startsWith("--group=")) out.group = parseEnum(arg, "group", GROUPS) as GroupMode;
+    else if (arg.startsWith("--group=")) {
+      const value = arg.split("=", 2)[1] ?? "";
+      if (value === "priority") {
+        throw new CliError(`--group=priority was renamed. Use --group=severity instead.`);
+      }
+      out.group = parseEnum(arg, "group", GROUPS) as GroupMode;
+    }
     else if (arg.startsWith("--format=")) out.format = parseEnum(arg, "format", FORMATS) as OutputFormat;
     else if (arg.startsWith("--hide=")) out.hide = parseSet(arg, "hide", STATUSES) as Set<Status>;
+    else if (arg.startsWith("--min-severity=")) {
+      out.minSeverity = parseEnum(arg, "min-severity", STATUSES) as Status;
+    }
     else if (arg.startsWith("--min-priority=")) {
-      out.minPriority = parseEnum(arg, "min-priority", PRIORITIES) as Priority;
+      throw new CliError(
+        `--min-priority was removed. Use --min-severity=fail|warn|info|ok instead.`,
+      );
     }
     else if (!arg.startsWith("-") && !out.url) out.url = arg;
   }

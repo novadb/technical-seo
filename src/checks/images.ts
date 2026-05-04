@@ -12,7 +12,6 @@ export const imagesCheck: Check = (ctx: AuditContext): Finding[] => {
     findings.push({
       status: "info", category: cat, name: "Images",
       message: "No <img> elements on the page",
-      priority: "info",
     });
     return findings;
   }
@@ -46,7 +45,6 @@ export const imagesCheck: Check = (ctx: AuditContext): Finding[] => {
     findings.push({
       status: "ok", category: cat, name: "Alt attributes",
       message: `All ${imgs.length} <img> have an alt attribute`,
-      priority: "high",
     });
   } else {
     const sample = missing.slice(0, 5).join(", ");
@@ -54,7 +52,6 @@ export const imagesCheck: Check = (ctx: AuditContext): Finding[] => {
       status: "fail", category: cat, name: "Alt attributes",
       message: `${missing.length} of ${imgs.length} images without alt attribute. Examples: ${sample}`,
       fix: 'Give every <img> an alt attribute (alt="" for purely decorative images)',
-      priority: "high",
     });
   }
 
@@ -65,13 +62,11 @@ export const imagesCheck: Check = (ctx: AuditContext): Finding[] => {
       status: "warn", category: cat, name: "Alt quality",
       message: `${suspicious.length} suspicious alt texts (too short or filename). Examples: ${sample}`,
       fix: "Phrase alt texts descriptively – don't repeat the filename",
-      priority: "medium",
     });
   } else if (goodAlt > 0) {
     findings.push({
       status: "ok", category: cat, name: "Alt quality",
       message: `${goodAlt} alt texts look plausible`,
-      priority: "medium",
     });
   }
 
@@ -79,7 +74,6 @@ export const imagesCheck: Check = (ctx: AuditContext): Finding[] => {
     findings.push({
       status: "info", category: cat, name: "Decorative images",
       message: `${emptyAltDecorative} <img> with alt="" (marked as decorative)`,
-      priority: "info",
     });
   }
 

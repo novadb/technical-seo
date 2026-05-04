@@ -1,7 +1,6 @@
 import type { CheerioAPI } from "cheerio";
 
 export type Status = "ok" | "fail" | "warn" | "info";
-export type Priority = "high" | "medium" | "low" | "info";
 
 export type Category =
   | "HTTP Response"
@@ -52,17 +51,16 @@ export interface Finding {
   name: string;
   message: string;
   fix?: string;
-  priority: Priority;
 }
 
 export type Check = (ctx: AuditContext) => Finding[] | Promise<Finding[]>;
 
-export type GroupMode = "category" | "priority" | "flat";
+export type GroupMode = "category" | "severity" | "flat";
 export type OutputFormat = "pretty" | "markdown" | "compact";
 
 export interface ReportOptions {
   group: GroupMode;
   format: OutputFormat;
   hide: Set<Status>;
-  minPriority: Priority | null;
+  minSeverity: Status | null;
 }

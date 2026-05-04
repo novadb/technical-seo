@@ -18,19 +18,17 @@ export const twitterCardsCheck: Check = (ctx: AuditContext): Finding[] => {
       status: "fail", category: cat, name: "twitter:card",
       message: "Missing",
       fix: 'Add <meta name="twitter:card" content="summary_large_image">',
-      priority: "high",
     });
   } else if (!VALID_CARD_TYPES.includes(card)) {
     findings.push({
       status: "warn", category: cat, name: "twitter:card",
       message: `Unknown type: ${card}`,
       fix: `Use one of the standard types: ${VALID_CARD_TYPES.join(", ")}`,
-      priority: "high",
     });
   } else {
     findings.push({
       status: "ok", category: cat, name: "twitter:card",
-      message: card, priority: "high",
+      message: card,
     });
   }
 
@@ -41,12 +39,11 @@ export const twitterCardsCheck: Check = (ctx: AuditContext): Finding[] => {
         status: "warn", category: cat, name: tag,
         message: "Not set (recommended)",
         fix: `Add <meta name="${tag}" content="…">`,
-        priority: "medium",
       });
     } else {
       findings.push({
         status: "ok", category: cat, name: tag,
-        message: truncate(v, 80), priority: "medium",
+        message: truncate(v, 80),
       });
     }
   }

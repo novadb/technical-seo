@@ -11,7 +11,6 @@ export const linksCheck: Check = (ctx: AuditContext): Finding[] => {
       status: "warn", category: cat, name: "Links",
       message: "No <a> elements on the page",
       fix: "Add internal links to support crawl depth",
-      priority: "low",
     });
     return findings;
   }
@@ -40,13 +39,11 @@ export const linksCheck: Check = (ctx: AuditContext): Finding[] => {
       status: "warn", category: cat, name: "Internal links",
       message: "No internal links detected",
       fix: "Add internal links to important sub-pages",
-      priority: "low",
     });
   } else {
     findings.push({
       status: "ok", category: cat, name: "Internal links",
       message: `${internal} internal / ${external} external links`,
-      priority: "low",
     });
   }
 
@@ -55,7 +52,6 @@ export const linksCheck: Check = (ctx: AuditContext): Finding[] => {
       status: "warn", category: cat, name: "Empty link targets",
       message: `${emptyHref} without href, ${hashOnly} with href="#"`,
       fix: "Set a real target URL or use <button> if no link is intended",
-      priority: "low",
     });
   }
 
