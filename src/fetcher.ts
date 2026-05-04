@@ -9,6 +9,7 @@ export async function fetchWithRedirectChain(inputUrl: string): Promise<FetchRes
   let schemeDowngrade = false;
 
   for (let hop = 0; hop < MAX_HOPS; hop++) {
+    const startedAt = performance.now();
     const response = await fetch(currentUrl, {
       redirect: "manual",
       headers: {
@@ -16,6 +17,7 @@ export async function fetchWithRedirectChain(inputUrl: string): Promise<FetchRes
         Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
       },
     });
+    const ttfbMs = performance.now() - startedAt;
 
     const status = response.status;
     const location = response.headers.get("location");
@@ -35,6 +37,8 @@ export async function fetchWithRedirectChain(inputUrl: string): Promise<FetchRes
     }
 
     const rawHtml = await response.text();
+    const totalMs = performance.now() - startedAt;
+    const htmlBytes = Buffer.byteLength(rawHtml, "utf8");
     return {
       inputUrl,
       finalUrl: currentUrl,
@@ -43,6 +47,9 @@ export async function fetchWithRedirectChain(inputUrl: string): Promise<FetchRes
       headers: response.headers,
       rawHtml,
       schemeDowngrade,
+      ttfbMs,
+      totalMs,
+      htmlBytes,
     };
   }
 

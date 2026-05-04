@@ -28,6 +28,7 @@ const CATEGORY_HEADERS: Record<Category, string> = {
   "HTTP Response": "🌐 HTTP Response",
   "Document Foundation": "📄 Document Foundation",
   "Meta & Head": "🏷️  Meta & Head",
+  Canonical: "🔖 Canonical",
   "Heading Structure": "📐 Heading Structure",
   Images: "🖼️  Images",
   "Open Graph": "📣 Open Graph",
@@ -35,12 +36,15 @@ const CATEGORY_HEADERS: Record<Category, string> = {
   Hreflang: "🌍 Hreflang / Internationalization",
   "Structured Data": "🧩 Structured Data",
   Links: "🔗 Links",
+  "Robots & Sitemaps": "🤖 Robots & Sitemaps",
+  Performance: "⚡ Performance",
 };
 
 const CATEGORY_ORDER: Category[] = [
   "HTTP Response",
   "Document Foundation",
   "Meta & Head",
+  "Canonical",
   "Heading Structure",
   "Images",
   "Open Graph",
@@ -48,6 +52,8 @@ const CATEGORY_ORDER: Category[] = [
   "Hreflang",
   "Structured Data",
   "Links",
+  "Robots & Sitemaps",
+  "Performance",
 ];
 
 const STATUS_ORDER: Status[] = ["fail", "warn", "info", "ok"];
