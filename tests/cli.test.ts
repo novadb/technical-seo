@@ -7,17 +7,13 @@ const DEFAULTS = {
   help: false,
   version: false,
   noColor: false,
-  group: "category" as const,
+  group: "status" as const,
   format: "pretty" as const,
-  minPriority: null,
+  show: "all" as const,
 };
 
-function snapshot(r: ReturnType<typeof parseArgs>) {
-  return { ...r, hide: [...r.hide].sort() };
-}
-
 test("parseArgs: -h sets help", () => {
-  assert.deepEqual(snapshot(parseArgs(["-h"])), { ...DEFAULTS, help: true, hide: [] });
+  assert.deepEqual(parseArgs(["-h"]), { ...DEFAULTS, help: true });
 });
 
 test("parseArgs: --help sets help", () => {
@@ -41,36 +37,37 @@ test("parseArgs: first non-flag wins as URL", () => {
 });
 
 test("parseArgs: empty argv yields defaults", () => {
-  assert.deepEqual(snapshot(parseArgs([])), { ...DEFAULTS, hide: [] });
+  assert.deepEqual(parseArgs([]), DEFAULTS);
 });
 
-test("parseArgs: --group=priority", () => {
-  assert.equal(parseArgs(["--group=priority"]).group, "priority");
+test("parseArgs: --group=category", () => {
+  assert.equal(parseArgs(["--group=category"]).group, "category");
 });
 
 test("parseArgs: --format=markdown", () => {
   assert.equal(parseArgs(["--format=markdown"]).format, "markdown");
 });
 
-test("parseArgs: --hide=ok,info parses to set", () => {
-  const r = parseArgs(["--hide=ok,info"]);
-  assert.deepEqual([...r.hide].sort(), ["info", "ok"]);
+test("parseArgs: --show=issues", () => {
+  assert.equal(parseArgs(["--show=issues"]).show, "issues");
 });
 
-test("parseArgs: --min-priority=medium", () => {
-  assert.equal(parseArgs(["--min-priority=medium"]).minPriority, "medium");
+test("parseArgs: --show=fails", () => {
+  assert.equal(parseArgs(["--show=fails"]).show, "fails");
 });
 
 test("parseArgs: invalid --group throws CliError", () => {
   assert.throws(() => parseArgs(["--group=bogus"]), CliError);
 });
 
-test("parseArgs: invalid --hide value throws CliError", () => {
-  assert.throws(() => parseArgs(["--hide=ok,nope"]), CliError);
+test("parseArgs: invalid --show throws CliError", () => {
+  assert.throws(() => parseArgs(["--show=urgent"]), CliError);
 });
 
-test("parseArgs: invalid --min-priority throws CliError", () => {
-  assert.throws(() => parseArgs(["--min-priority=urgent"]), CliError);
+test("parseArgs: unknown option throws CliError", () => {
+  assert.throws(() => parseArgs(["--bogus"]), CliError);
+  assert.throws(() => parseArgs(["--hide=ok"]), CliError);
+  assert.throws(() => parseArgs(["--min-severity=fail"]), CliError);
 });
 
 test("normalizeUrl: prefixes https:// when scheme missing", () => {

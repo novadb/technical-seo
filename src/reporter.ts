@@ -17,7 +17,7 @@ const ICONS: Record<Status, string> = {
 
 const STATUS_RANK: Record<Status, number> = { fail: 3, warn: 2, info: 1, ok: 0 };
 
-const SEVERITY_HEADERS: Record<Status, string> = {
+const STATUS_HEADERS: Record<Status, string> = {
   fail: "Failures",
   warn: "Warnings",
   info: "Info",
@@ -50,7 +50,7 @@ const CATEGORY_ORDER: Category[] = [
   "Links",
 ];
 
-const SEVERITY_ORDER: Status[] = ["fail", "warn", "info", "ok"];
+const STATUS_ORDER: Status[] = ["fail", "warn", "info", "ok"];
 
 export interface SummaryCounts {
   ok: number;
@@ -66,10 +66,9 @@ interface Group {
 }
 
 const DEFAULT_OPTIONS: ReportOptions = {
-  group: "category",
+  group: "status",
   format: "pretty",
-  hide: new Set(),
-  minSeverity: null,
+  show: "all",
 };
 
 export function report(
@@ -118,8 +117,9 @@ function countAll(findings: Finding[]): SummaryCounts {
 }
 
 function applyFilters(findings: Finding[], opts: ReportOptions): Finding[] {
-  const min = opts.minSeverity ? STATUS_RANK[opts.minSeverity] : -1;
-  return findings.filter((f) => !opts.hide.has(f.status) && STATUS_RANK[f.status] >= min);
+  if (opts.show === "all") return findings;
+  if (opts.show === "issues") return findings.filter((f) => f.status !== "ok");
+  return findings.filter((f) => f.status === "fail" || f.status === "info");
 }
 
 function groupFindings(findings: Finding[], mode: ReportOptions["group"]): Group[] {
@@ -127,9 +127,9 @@ function groupFindings(findings: Finding[], mode: ReportOptions["group"]): Group
     const sorted = [...findings].sort(compareForFlat);
     return [{ heading: null, items: sorted }];
   }
-  if (mode === "severity") {
-    return SEVERITY_ORDER.map((s) => ({
-      heading: SEVERITY_HEADERS[s],
+  if (mode === "status") {
+    return STATUS_ORDER.map((s) => ({
+      heading: STATUS_HEADERS[s],
       items: findings.filter((f) => f.status === s),
     }));
   }

@@ -1,4 +1,4 @@
-import type { GroupMode, OutputFormat, Status } from "./types.js";
+import type { GroupMode, OutputFormat, ShowMode } from "./types.js";
 
 export interface ParsedArgs {
   url: string | null;
@@ -7,13 +7,12 @@ export interface ParsedArgs {
   noColor: boolean;
   group: GroupMode;
   format: OutputFormat;
-  hide: Set<Status>;
-  minSeverity: Status | null;
+  show: ShowMode;
 }
 
-const GROUPS: ReadonlySet<GroupMode> = new Set(["category", "severity", "flat"]);
+const GROUPS: ReadonlySet<GroupMode> = new Set(["category", "status", "flat"]);
 const FORMATS: ReadonlySet<OutputFormat> = new Set(["pretty", "markdown", "compact"]);
-const STATUSES: ReadonlySet<Status> = new Set(["ok", "fail", "warn", "info"]);
+const SHOW_MODES: ReadonlySet<ShowMode> = new Set(["all", "issues", "fails"]);
 
 export class CliError extends Error {}
 
@@ -23,33 +22,19 @@ export function parseArgs(argv: string[]): ParsedArgs {
     help: false,
     version: false,
     noColor: false,
-    group: "category",
+    group: "status",
     format: "pretty",
-    hide: new Set(),
-    minSeverity: null,
+    show: "all",
   };
   for (const arg of argv) {
     if (arg === "-h" || arg === "--help") out.help = true;
     else if (arg === "-v" || arg === "--version") out.version = true;
     else if (arg === "--no-color") out.noColor = true;
-    else if (arg.startsWith("--group=")) {
-      const value = arg.split("=", 2)[1] ?? "";
-      if (value === "priority") {
-        throw new CliError(`--group=priority was renamed. Use --group=severity instead.`);
-      }
-      out.group = parseEnum(arg, "group", GROUPS) as GroupMode;
-    }
+    else if (arg.startsWith("--group=")) out.group = parseEnum(arg, "group", GROUPS) as GroupMode;
     else if (arg.startsWith("--format=")) out.format = parseEnum(arg, "format", FORMATS) as OutputFormat;
-    else if (arg.startsWith("--hide=")) out.hide = parseSet(arg, "hide", STATUSES) as Set<Status>;
-    else if (arg.startsWith("--min-severity=")) {
-      out.minSeverity = parseEnum(arg, "min-severity", STATUSES) as Status;
-    }
-    else if (arg.startsWith("--min-priority=")) {
-      throw new CliError(
-        `--min-priority was removed. Use --min-severity=fail|warn|info|ok instead.`,
-      );
-    }
-    else if (!arg.startsWith("-") && !out.url) out.url = arg;
+    else if (arg.startsWith("--show=")) out.show = parseEnum(arg, "show", SHOW_MODES) as ShowMode;
+    else if (arg.startsWith("-")) throw new CliError(`Unknown option: ${arg.split("=", 2)[0]}`);
+    else if (!out.url) out.url = arg;
   }
   return out;
 }
@@ -62,19 +47,6 @@ function parseEnum(arg: string, name: string, allowed: ReadonlySet<string>): str
     );
   }
   return value;
-}
-
-function parseSet(arg: string, name: string, allowed: ReadonlySet<string>): Set<string> {
-  const raw = arg.split("=", 2)[1] ?? "";
-  const parts = raw.split(",").map((s) => s.trim()).filter(Boolean);
-  for (const p of parts) {
-    if (!allowed.has(p)) {
-      throw new CliError(
-        `Invalid value for --${name}: "${p}". Allowed: ${[...allowed].join(", ")}.`,
-      );
-    }
-  }
-  return new Set(parts);
 }
 
 export function normalizeUrl(raw: string): string {
