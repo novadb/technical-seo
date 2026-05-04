@@ -21,10 +21,13 @@ export const CHECKS: ReadonlyArray<Check> = [
   headingsCheck,
   imagesCheck,
   openGraphCheck,
-  twitterCardsCheck,
   hreflangCheck,
   structuredDataCheck,
   linksCheck,
   robotsCheck,
   performanceCheck,
 ];
+
+export const OPTIONAL_CHECKS = {
+  twitter: twitterCardsCheck,
+} as const;
