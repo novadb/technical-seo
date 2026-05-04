@@ -6,13 +6,16 @@ export type Category =
   | "HTTP Response"
   | "Document Foundation"
   | "Meta & Head"
+  | "Canonical"
   | "Heading Structure"
   | "Images"
   | "Open Graph"
   | "Twitter Cards"
   | "Hreflang"
   | "Structured Data"
-  | "Links";
+  | "Links"
+  | "Robots & Sitemaps"
+  | "Performance";
 
 export interface RedirectHop {
   url: string;
@@ -28,6 +31,9 @@ export interface FetchResult {
   headers: Headers;
   rawHtml: string;
   schemeDowngrade: boolean;
+  ttfbMs: number;
+  totalMs: number;
+  htmlBytes: number;
 }
 
 export interface ParsedLinkHeaderEntry {

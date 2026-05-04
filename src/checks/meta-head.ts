@@ -105,38 +105,6 @@ export const metaHeadCheck: Check = (ctx: AuditContext): Finding[] => {
     });
   }
 
-  // Canonical (HTML + Link header)
-  const canonicalHtml = $('link[rel="canonical"]').attr("href")?.trim() ?? null;
-  const canonicalHeader = ctx.linkHeader.find((e) =>
-    (e.params["rel"] ?? "").toLowerCase().split(/\s+/).includes("canonical"),
-  )?.url ?? null;
-
-  if (!canonicalHtml && !canonicalHeader) {
-    findings.push({
-      status: "fail", category: cat, name: "Canonical",
-      message: "Set neither in <head> nor in the Link header",
-      fix: 'Add <link rel="canonical" href="…"> to <head>',
-    });
-  } else {
-    if (canonicalHtml && canonicalHeader && canonicalHtml !== canonicalHeader) {
-      findings.push({
-        status: "fail", category: cat, name: "Canonical conflict",
-        message: `HTML (${canonicalHtml}) and Link header (${canonicalHeader}) disagree`,
-        fix: "Agree on a single consistent canonical URL",
-      });
-    }
-    const canonical = canonicalHtml ?? canonicalHeader!;
-    const matches = sameUrl(canonical, ctx.finalUrl);
-    findings.push({
-      status: matches ? "ok" : "fail",
-      category: cat, name: "Canonical",
-      message: matches
-        ? `${canonical} (self-reference)`
-        : `${canonical} (does not point to final URL ${ctx.finalUrl})`,
-      fix: matches ? undefined : "Make sure this is intentional (e.g. pagination)",
-    });
-  }
-
   // Robots (HTML + X-Robots-Tag combined)
   const robotsMeta = $('meta[name="robots"]').attr("content")?.trim() ?? "";
   const xRobotsHeader = ctx.headers.get("x-robots-tag") ?? "";
@@ -197,14 +165,4 @@ export const metaHeadCheck: Check = (ctx: AuditContext): Finding[] => {
 
 function truncate(s: string, n: number): string {
   return s.length <= n ? s : s.slice(0, n - 1) + "…";
-}
-
-function sameUrl(a: string, b: string): boolean {
-  try {
-    const ua = new URL(a);
-    const ub = new URL(b);
-    return ua.origin === ub.origin && ua.pathname.replace(/\/$/, "") === ub.pathname.replace(/\/$/, "");
-  } catch {
-    return a === b;
-  }
 }
