@@ -23,13 +23,13 @@ Options:
   -h, --help                Show this help
   -v, --version             Print version
       --no-color            Disable colored output
-      --group=MODE          Group findings: category (default), severity, flat
+      --group=MODE          Group findings: status (default), category, flat
       --format=FORMAT       Output format: pretty (default), markdown, compact
-      --hide=STATUSES       Comma-separated statuses to suppress (ok,warn,fail,info)
-      --min-severity=LEVEL  Hide findings below: fail, warn, info, ok
+      --show=MODE           What to show: all (default), issues, fails
 
 Examples:
-  technical-seo https://example.com --group=severity --hide=ok
+  technical-seo https://example.com --show=issues
+  technical-seo https://example.com --group=status --show=fails
   technical-seo https://example.com --format=markdown --no-color > report.md
 `);
 }
@@ -86,8 +86,7 @@ async function main(): Promise<void> {
   const opts: ReportOptions = {
     group: args.group,
     format: args.format,
-    hide: args.hide,
-    minSeverity: args.minSeverity,
+    show: args.show,
   };
   const summary = report(findings, ctx, opts);
   process.exit(summary.fail > 0 ? 1 : 0);
