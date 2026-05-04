@@ -56,3 +56,13 @@ export interface Finding {
 }
 
 export type Check = (ctx: AuditContext) => Finding[] | Promise<Finding[]>;
+
+export type GroupMode = "category" | "priority" | "flat";
+export type OutputFormat = "pretty" | "markdown" | "compact";
+
+export interface ReportOptions {
+  group: GroupMode;
+  format: OutputFormat;
+  hide: Set<Status>;
+  minPriority: Priority | null;
+}
