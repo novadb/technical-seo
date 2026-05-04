@@ -11,21 +11,19 @@ export const documentFoundationCheck: Check = (ctx: AuditContext): Finding[] => 
       status: "fail", category: cat, name: "HTML5 Doctype",
       message: "No <!DOCTYPE> element at the start of the document",
       fix: "Place <!DOCTYPE html> as the first line",
-      priority: "medium",
     });
   } else {
     const decl = doctypeMatch[1].trim().toLowerCase();
     if (decl === "html") {
       findings.push({
         status: "ok", category: cat, name: "HTML5 Doctype",
-        message: "<!DOCTYPE html>", priority: "medium",
+        message: "<!DOCTYPE html>",
       });
     } else {
       findings.push({
         status: "warn", category: cat, name: "HTML5 Doctype",
         message: `Legacy doctype: <!DOCTYPE ${decl}>`,
         fix: "Switch to <!DOCTYPE html> (HTML5)",
-        priority: "medium",
       });
     }
   }
@@ -36,13 +34,11 @@ export const documentFoundationCheck: Check = (ctx: AuditContext): Finding[] => 
       status: "fail", category: cat, name: "Meta refresh",
       message: `Meta refresh detected (${ctx.metaRefresh.seconds}s${ctx.metaRefresh.url ? ` → ${ctx.metaRefresh.url}` : ""})`,
       fix: "Replace with a proper 301 redirect at the server level",
-      priority: "high",
     });
   } else {
     findings.push({
       status: "ok", category: cat, name: "Meta refresh",
       message: "Not present",
-      priority: "high",
     });
   }
 

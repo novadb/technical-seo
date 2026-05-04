@@ -3,7 +3,6 @@ import type {
   Category,
   Finding,
   OutputFormat,
-  Priority,
   ReportOptions,
   Status,
 } from "./types.js";
@@ -16,15 +15,14 @@ const ICONS: Record<Status, string> = {
   info: "ℹ️",
 };
 
-const PRIO_LABEL: Record<Priority, string> = {
-  high: "High",
-  medium: "Medium",
-  low: "Low",
-  info: "Info",
-};
-
-const PRIO_RANK: Record<Priority, number> = { high: 3, medium: 2, low: 1, info: 0 };
 const STATUS_RANK: Record<Status, number> = { fail: 3, warn: 2, info: 1, ok: 0 };
+
+const SEVERITY_HEADERS: Record<Status, string> = {
+  fail: "Failures",
+  warn: "Warnings",
+  info: "Info",
+  ok: "OK",
+};
 
 const CATEGORY_HEADERS: Record<Category, string> = {
   "HTTP Response": "🌐 HTTP Response",
@@ -52,7 +50,7 @@ const CATEGORY_ORDER: Category[] = [
   "Links",
 ];
 
-const PRIORITY_ORDER: Priority[] = ["high", "medium", "low", "info"];
+const SEVERITY_ORDER: Status[] = ["fail", "warn", "info", "ok"];
 
 export interface SummaryCounts {
   ok: number;
@@ -71,7 +69,7 @@ const DEFAULT_OPTIONS: ReportOptions = {
   group: "category",
   format: "pretty",
   hide: new Set(),
-  minPriority: null,
+  minSeverity: null,
 };
 
 export function report(
@@ -120,8 +118,8 @@ function countAll(findings: Finding[]): SummaryCounts {
 }
 
 function applyFilters(findings: Finding[], opts: ReportOptions): Finding[] {
-  const min = opts.minPriority ? PRIO_RANK[opts.minPriority] : -1;
-  return findings.filter((f) => !opts.hide.has(f.status) && PRIO_RANK[f.priority] >= min);
+  const min = opts.minSeverity ? STATUS_RANK[opts.minSeverity] : -1;
+  return findings.filter((f) => !opts.hide.has(f.status) && STATUS_RANK[f.status] >= min);
 }
 
 function groupFindings(findings: Finding[], mode: ReportOptions["group"]): Group[] {
@@ -129,12 +127,10 @@ function groupFindings(findings: Finding[], mode: ReportOptions["group"]): Group
     const sorted = [...findings].sort(compareForFlat);
     return [{ heading: null, items: sorted }];
   }
-  if (mode === "priority") {
-    return PRIORITY_ORDER.map((p) => ({
-      heading: `${PRIO_LABEL[p]} priority`,
-      items: findings
-        .filter((f) => f.priority === p)
-        .sort((a, b) => STATUS_RANK[b.status] - STATUS_RANK[a.status]),
+  if (mode === "severity") {
+    return SEVERITY_ORDER.map((s) => ({
+      heading: SEVERITY_HEADERS[s],
+      items: findings.filter((f) => f.status === s),
     }));
   }
   return CATEGORY_ORDER.map((cat) => ({
@@ -146,8 +142,6 @@ function groupFindings(findings: Finding[], mode: ReportOptions["group"]): Group
 function compareForFlat(a: Finding, b: Finding): number {
   const s = STATUS_RANK[b.status] - STATUS_RANK[a.status];
   if (s !== 0) return s;
-  const p = PRIO_RANK[b.priority] - PRIO_RANK[a.priority];
-  if (p !== 0) return p;
   return a.category.localeCompare(b.category);
 }
 
@@ -184,16 +178,15 @@ function renderFinding(f: Finding, format: OutputFormat): string {
   const icon = ICONS[f.status];
   if (format === "markdown") {
     const fix = f.fix ? ` _Fix: ${f.fix}._` : "";
-    return `- ${icon} **${f.name}** — ${f.message}.${fix} \`${PRIO_LABEL[f.priority]}\``;
+    return `- ${icon} **${f.name}** — ${f.message}.${fix}`;
   }
   if (format === "compact") {
     return `${icon} ${f.category} · ${f.name}: ${f.message}`;
   }
   const name = colors.bold(f.name);
   const fix = f.fix ? ` Fix: ${f.fix}.` : "";
-  const prio = colors.dim(`Priority: ${PRIO_LABEL[f.priority]}`);
   const colored = colorMessage(f.status, f.message);
-  return `  ${icon} ${name} — ${colored}.${fix} ${prio}`;
+  return `  ${icon} ${name} — ${colored}.${fix}`;
 }
 
 function colorMessage(status: Status, msg: string): string {
