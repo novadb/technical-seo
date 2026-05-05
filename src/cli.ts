@@ -8,6 +8,7 @@ export interface ParsedArgs {
   group: GroupMode;
   format: OutputFormat;
   show: ShowMode;
+  twitter: boolean;
 }
 
 const GROUPS: ReadonlySet<GroupMode> = new Set(["category", "status", "flat"]);
@@ -25,11 +26,13 @@ export function parseArgs(argv: string[]): ParsedArgs {
     group: "status",
     format: "pretty",
     show: "all",
+    twitter: false,
   };
   for (const arg of argv) {
     if (arg === "-h" || arg === "--help") out.help = true;
     else if (arg === "-v" || arg === "--version") out.version = true;
     else if (arg === "--no-color") out.noColor = true;
+    else if (arg === "--twitter") out.twitter = true;
     else if (arg.startsWith("--group=")) out.group = parseEnum(arg, "group", GROUPS) as GroupMode;
     else if (arg.startsWith("--format=")) out.format = parseEnum(arg, "format", FORMATS) as OutputFormat;
     else if (arg.startsWith("--show=")) out.show = parseEnum(arg, "show", SHOW_MODES) as ShowMode;

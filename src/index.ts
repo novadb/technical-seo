@@ -1,6 +1,6 @@
 import { fetchWithRedirectChain } from "./fetcher.js";
 import { buildAuditContext } from "./parser.js";
-import { CHECKS } from "./checks/index.js";
+import { CHECKS, OPTIONAL_CHECKS } from "./checks/index.js";
 import { report } from "./reporter.js";
 import { setColorEnabled } from "./colors.js";
 import { parseArgs, normalizeUrl, CliError } from "./cli.js";
@@ -26,6 +26,7 @@ Options:
       --group=MODE          Group findings: status (default), category, flat
       --format=FORMAT       Output format: pretty (default), markdown, compact
       --show=MODE           What to show: all (default), issues, fails
+      --twitter             Enable twitter:card check (off by default)
 
 Examples:
   technical-seo https://example.com --show=issues
@@ -67,8 +68,11 @@ async function main(): Promise<void> {
 
   const ctx = buildAuditContext(fetched);
 
+  const checks = [...CHECKS];
+  if (args.twitter) checks.push(OPTIONAL_CHECKS.twitter);
+
   const findings: Finding[] = [];
-  for (const check of CHECKS) {
+  for (const check of checks) {
     try {
       const result = await check(ctx);
       findings.push(...result);
